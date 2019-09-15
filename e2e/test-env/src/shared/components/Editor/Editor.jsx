@@ -2,11 +2,26 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { convertFromRaw, convertToRaw, EditorState } from '@wix/draft-js';
 import deepFreeze from 'deep-freeze';
-import { RichContentEditor } from 'wix-rich-content-editor';
+import { RichContentEditor, RichContentEditorModal } from 'wix-rich-content-editor';
 import 'wix-rich-content-common/dist/styles.min.css';
 import 'wix-rich-content-editor/dist/styles.min.css';
-import theme from '../../theme';
+import ReactModal from 'react-modal';
+import ModalsMap from './ModalsMap';
 import * as Plugins from './editorPlugins';
+import theme from '../../theme';
+
+const modalStyleDefaults = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+  },
+};
+const anchorTarget = '_blank';
+const relValue = 'nofollow';
 
 class Editor extends Component {
   static propTypes = {
@@ -17,13 +32,16 @@ class Editor extends Component {
   state = {
     editorState: EditorState.createWithContent(convertFromRaw(this.props.initialState)),
   };
+  componentDidMount() {
+    ReactModal.setAppElement('#root');
+  }
 
   handleChange = editorState => {
     this.setState({ editorState });
     if (typeof window !== 'undefined') {
       // ensures that tests fail when entity map is mutated
-      const rr = convertToRaw(editorState.getCurrentContent());
-      const raw = deepFreeze(rr);
+      const raw = convertToRaw(editorState.getCurrentContent());
+      // const raw = deepFreeze(rr);
       window.__CONTENT_STATE__ = raw;
       window.__CONTENT_SNAPSHOT__ = {
         ...raw,
@@ -35,7 +53,12 @@ class Editor extends Component {
 
   helpers = {
     onFilesChange: () => {},
-    onVideoSelected: () => {},
+    onVideoSelected: (url, updateEntity) => {
+      setTimeout(() => {
+        const testVideo = testVideos[Math.floor(Math.random() * testVideos.length)];
+        updateEntity(testVideo);
+      }, 500);
+    },
     openModal: data => {
       const { modalStyles, ...modalProps } = data;
       try {
@@ -66,6 +89,10 @@ class Editor extends Component {
     },
   };
   render() {
+    const modalStyles = {
+      content: Object.assign({}, modalStyleDefaults.content),
+    };
+    const { onRequestClose } = this.state.modalProps || {};
     return (
       <>
         Editor
@@ -77,8 +104,27 @@ class Editor extends Component {
           plugins={Plugins.editorPlugins}
           config={Plugins.config}
           isMobile={this.props.isMobile}
+          anchorTarget={anchorTarget}
+          relValue={relValue}
           helpers={this.helpers}
+          locale={this.props.locale}
+          localeResource={this.props.localeResource}
         />
+        <ReactModal
+          isOpen={this.state.showModal}
+          contentLabel="External Modal Example"
+          style={modalStyles}
+          role="dialog"
+          onRequestClose={onRequestClose || this.helpers.closeModal}
+        >
+          {this.state.showModal && (
+            <RichContentEditorModal
+              modalsMap={ModalsMap}
+              locale={this.props.locale}
+              {...this.state.modalProps}
+            />
+          )}
+        </ReactModal>
       </>
     );
   }
