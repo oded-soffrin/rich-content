@@ -34,3 +34,27 @@ export const getDefault = () => ({
     spacing: 0,
   },
 });
+
+export const getTitleStyleParams = (galleryLayout, isMobile) => {
+  const display = isMobile
+    ? {
+        titlePlacement: 'SHOW_BELOW',
+        calculateTextBoxHeightMode: 'AUTOMATIC',
+      }
+    : {
+        titlePlacement: 'SHOW_ON_HOVER',
+        allowHover: true,
+        galleryVerticalAlign: 'flex-end',
+      };
+
+  return {
+    isVertical: galleryLayout === 1,
+    allowTitle: true,
+    galleryTextAlign: 'center',
+    textsHorizontalPadding: 0,
+    imageInfoType: 'NO_BACKGROUND',
+    hoveringBehaviour: 'APPEARS',
+    textsVerticalPadding: 0,
+    ...display,
+  };
+};

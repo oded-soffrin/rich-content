@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isEqual } from 'lodash';
+import { isEqual, get } from 'lodash';
 import { validate, mergeStyles, Context } from 'wix-rich-content-common';
 import { convertItemData } from './helpers/convert-item-data';
-import { getDefault } from './constants';
+import { getDefault, getTitleStyleParams } from './constants';
 import resizeMediaUrl from './helpers/resize-media-url';
 import schema from '../statics/data-schema.json';
 import viewerStyles from '../statics/styles/viewer.scss';
@@ -56,12 +56,10 @@ class GalleryViewer extends React.Component {
   };
 
   stateFromProps = props => {
+    const { componentData } = props;
     const defaults = getDefault();
-    const items = props.componentData.items || defaults.items;
-    const styleParams = this.getStyleParams(
-      Object.assign(defaults.styles, props.componentData.styles || {}),
-      this.hasTitle(items)
-    );
+    const items = componentData.items || defaults.items;
+    const styleParams = this.generateStyleParams(componentData, items);
     // TODO remove gallery key
     const galleryKey = Math.random();
     return {
@@ -71,16 +69,26 @@ class GalleryViewer extends React.Component {
     };
   };
 
-  getItems() {
-    const { items } = this.state;
-    const { anchorTarget, relValue } = this.context;
+  generateStyleParams = (componentData, items) => {
+    const defaults = getDefault();
 
-    if (items.length > 0) {
-      return convertItemData({ items, anchorTarget, relValue });
-    } else {
-      return this.sampleItems;
-    }
-  }
+    const styleParams = {
+      ...defaults.styles,
+      ...(componentData.styles || {}),
+    };
+
+    const titleStyleParams = this.hasTitle(items)
+      ? getTitleStyleParams(styleParams.galleryLayout, this.context.isMobile)
+      : {};
+
+    const isRTL = get(this.context, 'languageDir') === 'rtl';
+
+    return {
+      ...styleParams,
+      ...titleStyleParams,
+      isRTL,
+    };
+  };
 
   // handle pro-gallery events
   // https://github.com/wix-incubator/pro-gallery/blob/master/packages/gallery/src/utils/constants/events.js
@@ -101,43 +109,29 @@ class GalleryViewer extends React.Component {
     }
   };
 
-  hasTitle = items => {
-    return items.some(item => {
-      return item.metadata && item.metadata.title;
-    });
-  };
+  hasTitle = items => items.some(item => item.metadata && item.metadata.title);
 
-  getStyleParams = (styleParams, shouldRenderTitle) => {
-    if (!shouldRenderTitle) {
-      return styleParams;
+  get items() {
+    const { items } = this.state;
+    const { anchorTarget, relValue } = this.context;
+
+    if (items.length > 0) {
+      return convertItemData({ items, anchorTarget, relValue });
+    } else {
+      return this.sampleItems;
     }
-    const display = this.context.isMobile
-      ? { titlePlacement: 'SHOW_BELOW', calculateTextBoxHeightMode: 'AUTOMATIC' }
-      : { titlePlacement: 'SHOW_ON_HOVER', allowHover: true, galleryVerticalAlign: 'flex-end' };
-    return {
-      ...styleParams,
-      isVertical: styleParams.galleryLayout === 1,
-      allowTitle: true,
-      galleryTextAlign: 'center',
-      textsHorizontalPadding: 0,
-      imageInfoType: 'NO_BACKGROUND',
-      hoveringBehaviour: 'APPEARS',
-      textsVerticalPadding: 0,
-      ...display,
-    };
-  };
+  }
 
   render() {
     this.styles = this.styles || mergeStyles({ styles: viewerStyles, theme: this.context.theme });
     // TODO remove gallery key
     const { galleryKey, styleParams, size = { width: 300 } } = this.state;
-    const items = this.getItems();
     return (
       <div ref={elem => (this.container = elem)} className={this.styles.gallery_container}>
         <ProGallery
           // TODO remove gallery key
           key={galleryKey}
-          items={items}
+          items={this.items}
           styles={styleParams}
           container={size}
           settings={this.props.settings}
