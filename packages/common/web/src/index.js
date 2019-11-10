@@ -21,6 +21,24 @@ export { default as Context } from './Utils/Context';
 export { mergeStyles } from './Utils/mergeStyles';
 export { default as normalizeInitialState } from './Utils/normalization/normalizeInitialState';
 export { default as getDisplayName } from './Utils/getDisplayName';
+
+export {
+  insertLinkAtCurrentSelection,
+  insertLinkInPosition,
+  hasLinksInBlock,
+  hasLinksInSelection,
+  getLinkDataInSelection,
+  removeLinksInSelection,
+  getTextAlignment,
+  setTextAlignment,
+  getAnchorBlockData,
+  mergeBlockData,
+  isAtomicBlockFocused,
+  setEntityData,
+  replaceWithEmptyBlock,
+  deleteBlock,
+  getSelectedLinks,
+} from './Utils/draftUtils';
 export { default as Version } from './Utils/versioningUtils';
 export { hasLinksInBlock } from './Utils/draftUtils';
 export { validate, getContentStateSchema } from './Utils/data-schema-validator';

@@ -27,45 +27,70 @@ const createLinkPlugin = (config = {}) => {
     }
   };
 
+  let previousContent;
+  const isPasteChange = editorState => {
+    const content = editorState.getCurrentContent();
+    const contentChanged = editorState.getCurrentContent() !== previousContent; //editorState changes for both content and selectionState
+    previousContent = content;
+    return contentChanged && editorState.getLastChangeType() === 'insert-fragment';
+  };
+
   const onChange = editorState => {
-    if (linkifyData) {
-      const newEditorState = addLinkAt(linkifyData, editorState);
-      linkifyData = false;
-      return newEditorState;
-    }
+    // if (isPasteChange(editorState)) {
+    //   return fixPastedLinks(editorState);
+    // } else if (linkifyData) {
+    //   const newEditorState = addLinkAt(linkifyData, editorState);
+    //   linkifyData = false;
+    //   return newEditorState;
+    // }
     return editorState;
   };
+
+  const handlePastedText = function fixPastedLinks(editorState) {
+    const content = editorState.getCurrentContent();
+    const selectionBefore = content.getSelectionBefore();
+    const selection = content.getSelectionAfter().merge({
+      anchorKey: selectionBefore.getStartKey(),
+      anchorOffset: selectionBefore.getStartOffset(),
+    });
+    const links = getSelectedLinks(editorState, selection);
+    links.forEach(link => {
+      const linkEntity = content.getEntity(link.entityKey);
+    });
+    return undefined;
+  };
+
   // linkify pasted text
-  // onChange = editorState => {
-  //   let newEditorState = editorState;
-  //   if (editorState.getLastChangeType() === 'insert-fragment') {
-  //     const content = editorState.getCurrentContent();
-  //     const startKey = content.getSelectionBefore().getStartKey();
-  //     const endKey = content.getSelectionAfter().getEndKey();
-  //     const blockMap = content.getBlockMap();
-  //     const blockKeys = blockMap.keySeq();
-  //     const startIndex = blockKeys.indexOf(startKey);
-  //     const endIndex = blockKeys.indexOf(endKey) + 1;
-  //
-  //     blockMap.slice(startIndex, endIndex).forEach(block => {
-  //       const text = block.getText();
-  //       getUrlMatches(text)
-  //         .filter(({ text: url, index: start, lastIndex: end }) => {
-  //           const entityKey = block.getEntityAt(start);
-  //           const entityType = entityKey !== null && content.getEntity(entityKey).getType();
-  //           const longEnough = url.length >= minLinkifyLength;
-  //           return entityType !== 'LINK' && entityType !== 'WAS_LINK' && longEnough;
-  //         })
-  //         .forEach(({ text: url, index: start, lastIndex: end }) => {
-  //           newEditorState = addLinkAt(
-  //             { string: url, index: start, endIndex: end, blockKey: block.getKey() },
-  //             newEditorState
-  //           );
-  //         });
-  //     });
-  //   }
-  //   return newEditorState;
-  // };
+  const onChange2 = editorState => {
+    let newEditorState = editorState;
+    if (editorState.getLastChangeType() === 'insert-fragment') {
+      const content = editorState.getCurrentContent();
+      const startKey = content.getSelectionBefore().getStartKey();
+      const endKey = content.getSelectionAfter().getEndKey();
+      const blockMap = content.getBlockMap();
+      const blockKeys = blockMap.keySeq();
+      const startIndex = blockKeys.indexOf(startKey);
+      const endIndex = blockKeys.indexOf(endKey) + 1;
+
+      blockMap.slice(startIndex, endIndex).forEach(block => {
+        const text = block.getText();
+        getUrlMatches(text)
+          .filter(({ text: url, index: start, lastIndex: end }) => {
+            const entityKey = block.getEntityAt(start);
+            const entityType = entityKey !== null && content.getEntity(entityKey).getType();
+            const longEnough = url.length >= minLinkifyLength;
+            return entityType !== 'LINK' && entityType !== 'WAS_LINK' && longEnough;
+          })
+          .forEach(({ text: url, index: start, lastIndex: end }) => {
+            newEditorState = addLinkAt(
+              { string: url, index: start, endIndex: end, blockKey: block.getKey() },
+              newEditorState
+            );
+          });
+      });
+    }
+    return newEditorState;
+  };
 
   const getLinkifyData = editorState => {
     const str = findLastStringWithNoSpaces(editorState);
