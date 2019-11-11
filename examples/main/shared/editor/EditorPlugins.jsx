@@ -152,6 +152,7 @@ export const config = {
       typeof window !== 'undefined' && document.getElementsByClassName('editor-example')[0],
   },
   [IMAGE_TYPE]: {
+    defaultData: { alignment: 'left' },
     imageEditorWixSettings: {
       initiator: 'some-initiator',
       siteToken:

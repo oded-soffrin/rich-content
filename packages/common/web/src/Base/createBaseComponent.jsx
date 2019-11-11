@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
-import { compact, isNil } from 'lodash';
+import { merge, compact, isNil } from 'lodash';
 import classNames from 'classnames';
 import createHocName from '../Utils/createHocName';
 import getDisplayName from '../Utils/getDisplayName';
@@ -39,7 +39,7 @@ const createBaseComponent = ({
 
     constructor(props) {
       super(props);
-      this.state = { componentState: {}, ...this.stateFromProps(props) };
+      this.state = { componentState: {}, ...this.stateFromProps(props, settings) };
       this.styles = { ...styles, ...rtlIgnoredStyles };
     }
 
@@ -48,15 +48,19 @@ const createBaseComponent = ({
       this.setState(this.stateFromProps(nextProps));
     }
 
-    stateFromProps(props) {
+    stateFromProps(props, settings) {
       const { getData, readOnly } = props.blockProps;
       const initialState = pubsub.get('initialState_' + props.block.getKey());
       if (initialState) {
         //reset the initial state
         pubsub.set('initialState_' + props.block.getKey(), undefined);
       }
+
       return {
-        componentData: getData() || { config: DEFAULTS },
+        componentData:
+          settings && settings.defaultData
+            ? merge(getData() || { config: DEFAULTS }, { config: settings.defaultData })
+            : getData() || { config: DEFAULTS },
         readOnly: !!readOnly,
         componentState: initialState || {},
       };
