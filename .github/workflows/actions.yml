@@ -1,6 +1,6 @@
 name: ESLint Action
 uses: gimenete/eslint-action@1.0
-
+on: push
 #name: action
 #on: push
 
