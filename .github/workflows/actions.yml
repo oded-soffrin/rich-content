@@ -1,16 +1,19 @@
-name: action
-on: push
+name: ESLint Action
+uses: gimenete/eslint-action@1.0
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - run: npm install
-      - run: npm run lint
+#name: action
+#on: push
+
+#jobs:
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: actions/setup-node@v1
+#        with:
+#          node-version: 12
+#      - run: npm install
+#      - run: npm run lint
   # test:
   #   runs-on: ubuntu-latest
   #   steps:
