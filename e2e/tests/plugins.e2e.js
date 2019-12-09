@@ -257,15 +257,15 @@ describe('plugins', () => {
 
     it('enable to add a video from URI', function() {
       cy.openVideoUploadModal().addVideoFromURI();
-      cy.get('[data-loaded=true]');
       cy.shrinkPlugin();
+      cy.waitForVideoToLoad();
       cy.eyesCheckWindow(this.test.title);
     });
 
     // eslint-disable-next-line mocha/no-skipped-tests
     it.skip('enable to add a custom video', function() {
       cy.openVideoUploadModal().addCustomVideo();
-      cy.get('[data-loaded=true]');
+      cy.waitForVideoToLoad();
       cy.shrinkPlugin();
       cy.eyesCheckWindow(this.test.title);
     });
@@ -287,7 +287,7 @@ describe('plugins', () => {
 
     it('enable to add a soundcloud URI', function() {
       cy.openSoundCloudModal().addSoundCloud();
-      cy.get('[data-loaded=true]');
+      cy.waitForVideoToLoad();
       cy.shrinkPlugin();
       cy.eyesCheckWindow(this.test.title);
     });
@@ -309,7 +309,8 @@ describe('plugins', () => {
     });
   });
 
-  context('divider', () => {
+  // eslint-disable-next-line mocha/no-skipped-tests
+  context.skip('divider', () => {
     before(function() {
       eyesOpen(this);
     });
@@ -406,6 +407,7 @@ describe('plugins', () => {
       const src = `[data-hook=${PLUGIN_COMPONENT.IMAGE}] + [data-hook=componentOverlay]`;
       const dest = `span[data-offset-key="fjkhf-0-0"]`;
       cy.dragAndDropPlugin(src, dest);
+      cy.get('img[style="opacity: 1;"]');
       cy.eyesCheckWindow(this.test.title);
     });
   });

@@ -1,7 +1,7 @@
-@import './consts';
-@import './mixins';
-@import './palette';
-@import './fonts';
+@import '~wix-rich-content-common/dist/statics/styles/consts';
+@import "~wix-rich-content-common/dist/statics/styles/mixins";
+@import '~wix-rich-content-common/dist/statics/styles/palette';
+@import '~wix-rich-content-common/dist/statics/styles/fonts';
 
 //*** GENERIC ***//
 .flex {
@@ -17,13 +17,6 @@
 // *:focus,
 .focused {
   outline: 1px dashed;
-}
-
-.noOutline {
-  *:focus {
-    outline: none;
-    box-shadow: none;
-  }
 }
 
 .visuallyHidden {
@@ -47,6 +40,7 @@
   position: absolute;
   top: 0;
   left: 0;
+  cursor: move;
 }
 
 .hidden {
